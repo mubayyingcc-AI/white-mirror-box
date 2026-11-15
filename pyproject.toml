@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "execucern"
+version = "0.1.0"
+description = "A small, model-agnostic pre-execution policy guard for AI agent tool calls."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [{name = "Execucern contributors"}]
+keywords = ["ai-agents", "agent-security", "tool-calls", "mcp", "policy", "guardrails"]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Topic :: Security"]
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+include = ["execucern*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
