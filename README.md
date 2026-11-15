@@ -1,62 +1,45 @@
-# Execucern Execution Firewall
+# White Mirror Box
 
-A small, model-agnostic **pre-execution guard for AI-agent tool calls**.
+White Mirror Box is an architecture for **intent integrity and execution assurance**.
 
-Execucern wraps the last trusted boundary before a tool or business API runs. It defaults to deny, supports `ALLOW`, `BLOCK`, and `ESCALATE`, binds approvals to the exact actor/tool/arguments, prevents approval replay, enforces simple budgets, and emits redacted audit events.
+Its purpose is to preserve human-defined premises, verify whether outputs remain faithful to those premises, control release decisions, and produce auditable evidence for review. It is not the home of the Execucern runtime firewall.
 
-This is intentionally a narrow open-source wedge. It does not replace an identity provider, network policy, MCP authorization server, sandbox runtime, or immutable audit service. It does not make LLM execution deterministic. The goal is to give developers a useful control they can install in minutes and compose with LangGraph, OpenAI Agents, CrewAI, PydanticAI, raw Python, HTTP adapters, or MCP clients.
+## Architectural focus
 
-## Install and run
+White Mirror Box is concerned with the integrity of the path from human intent to an approved release:
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e '.[test]'
-pytest -q
-python examples/basic.py
+```text
+Human premise / intent
+        |
+        v
+Structured constraints and acceptance criteria
+        |
+        v
+Model or agent output
+        |
+        v
+Verification against the original premise
+        |
+        v
+Release decision and evidence
 ```
 
-## Minimal integration
+The architecture may include:
 
-```python
-from execucern import Firewall, Rule
+- premise capture and versioning;
+- intent and constraint representation;
+- output and artifact verification;
+- contradiction and drift detection;
+- release gates and accountable decisions;
+- provenance and review evidence; and
+- integration points for downstream execution controls.
 
-firewall = Firewall(
-    rules={
-        "search_orders": Rule(allow=True),
-        "refund_order": Rule(allow=True, require_approval=True),
-    },
-    approval_secret="load-from-a-secret-manager",
-)
+## What does not belong here
 
-result = firewall.execute(
-    "support-agent",
-    "search_orders",
-    {"query": "late shipment"},
-    search_orders,
-)
-```
+White Mirror Box does not implement the agent tool-call firewall, MCP gateway, approval-token service, sandbox runtime, or transaction-enforcement adapter. Those concerns belong in focused components that can be adopted independently.
 
-For `require_approval=True`, issue an `ApprovalToken` only after an independently authenticated reviewer or policy service approves the exact action. An approval for a different amount, target, actor, or tool is rejected.
+The related [Execucern Execution Firewall](https://github.com/mubayyingcc-AI/execucern-firewall) is the developer-facing pre-execution guard for tool calls. [ActBound](https://github.com/mubayyingcc-AI/ActBound) explores high-consequence action enforcement with signed receipts and budget controls. [Envarith-System](https://github.com/mubayyingcc-AI/Envarith-System) explores authority envelopes, governance workflows, evidence, and accountability.
 
-## Why this wedge
+## Status
 
-Agent protocols standardize tool connectivity, but they do not by themselves enforce the application's authorization policy. MCP's own guidance treats tool descriptions as untrusted and calls for explicit consent and authorization controls. Execucern makes the enforcement point explicit and framework-agnostic.
-
-The project deliberately calls its recording feature an **audit event**, not deterministic replay. A future replay package can add recorded tool-result fixtures and regression diffs without claiming that live external state is reproducible.
-
-## Status and safety
-
-Alpha, local-only SDK. Do not connect this prototype directly to production payment rails, destructive infrastructure, or sensitive customer data without an independent security review. The host application remains responsible for identity, secret storage, tool isolation, tenant separation, durable audit retention, and the final protected adapter.
-
-## Project shape
-
-- `execucern/` — zero-dependency Python SDK.
-- `plugin.json` and `skills/` — portable Agent Plugin package metadata.
-- `tests/` — negative and security-focused tests.
-- `examples/` — copy-paste starting point.
-- `FACT_CHECK_AND_PRODUCT_PLAN.md` — researched positioning, evidence, and next-stage roadmap.
-
-## License
-
-Apache-2.0.
+This repository is an architectural foundation. Claims about verification, evidence, safety, compliance, or release authorization require a concrete implementation, threat model, repeatable tests, and clearly documented limits.
